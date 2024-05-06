@@ -139,3 +139,32 @@ private:
     }
 };
 ```
+
+## 4th
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        ListNode sentinel = ListNode(0, head);
+        ListNode* node = &sentinel;
+        while (node->next != nullptr && node->next->next != nullptr) {
+            if (node->next->val == node->next->next->val) {
+                node->next = skipDuplicateNodes(node->next);
+            } else {
+                node = node->next;
+            }
+        }
+        return sentinel.next;
+    }
+
+private:
+    ListNode* skipDuplicateNodes(ListNode* node) const {
+        // precondition: node != nullptr
+        while (node->next != nullptr && node->val == node->next->val) {
+            node = node->next;
+        }
+        return node->next;
+    }
+};
+```
