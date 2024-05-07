@@ -168,3 +168,26 @@ private:
     }
 };
 ```
+
+## 5th
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        unique_ptr<ListNode> dummy_head = make_unique<ListNode>(ListNode(0, head));
+        ListNode* node = dummy_head.get();
+        while (node->next && node->next->next) {
+            if (node->next->val != node->next->next->val) {
+                node = node->next;
+                continue;
+            }
+            const int dup_val = node->next->val;
+            while (node->next && node->next->val == dup_val) {
+                node->next = node->next->next;
+            }
+        }
+        return dummy_head->next;
+    }
+}
+```
