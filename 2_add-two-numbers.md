@@ -143,3 +143,36 @@ private:
     }
 };
 ```
+
+## 4th
+
+```cpp
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode dummy_head = ListNode(-1);
+        ListNode* node = &dummy_head;
+        int carry = 0;
+        while (l1 || l2 || carry) {
+            const int total = getValOrDefault(l1, 0) + getValOrDefault(l2, 0) + carry;
+            carry = total / 10;
+            node->next = new ListNode(total % 10); // digit
+            node = node->next;
+            l1 = getNextIfExists(l1);
+            l2 = getNextIfExists(l2);
+        }
+        return dummy_head.next;
+    }
+
+private:
+    static int getValOrDefault(const ListNode* const node, const int default_value) {
+        if (!node) return default_value;
+        return node->val;
+    }
+
+    static ListNode* getNextIfExists(const ListNode* const node) {
+        if (!node) return nullptr;
+        return node->next;
+    }
+};
+```
