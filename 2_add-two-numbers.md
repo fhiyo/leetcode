@@ -176,3 +176,102 @@ private:
     }
 };
 ```
+
+## 5th
+
+スタックで行きがけの再帰
+
+```cpp
+struct DigitInfo {
+    ListNode* prev_added;
+    ListNode* digit_node1;
+    ListNode* digit_node2;
+    int carry;
+};
+
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode dummy_head = {};
+        stack<DigitInfo> digit_info_stack = {};
+        digit_info_stack.push({&dummy_head, l1, l2, 0});
+        while (!digit_info_stack.empty()) {
+            auto [prev, digit_node1, digit_node2, carry] = digit_info_stack.top();
+            digit_info_stack.pop();
+            if (!digit_node1 && !digit_node2 && !carry) continue;
+            const int total = getValOrDefault(digit_node1, 0) + getValOrDefault(digit_node2, 0) + carry;
+            prev->next = new ListNode(total % 10);
+            digit_info_stack.push({prev->next, getNextIfExists(digit_node1), getNextIfExists(digit_node2), total / 10});
+        }
+        return dummy_head.next;
+    }
+
+private:
+    static int getValOrDefault(const ListNode* const node, const int default_value) {
+        if (!node) return default_value;
+        return node->val;
+    }
+
+    static ListNode* getNextIfExists(const ListNode* const node) {
+        if (!node) return nullptr;
+        return node->next;
+    }
+};
+```
+
+スタックで帰りがけの再帰
+
+```cpp
+enum RecursiveDirection {
+    go, back
+};
+
+struct DigitInfo {
+    ListNode* prev;
+    ListNode* current;
+    ListNode* digit_node1;
+    ListNode* digit_node2;
+    int carry;
+};
+
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode* head = new ListNode(0);
+        stack<pair<RecursiveDirection, DigitInfo>> digit_info_stack = {};
+        digit_info_stack.push({RecursiveDirection::go, {nullptr, head, l1, l2, 0}});
+        while (!digit_info_stack.empty()) {
+            auto [direction, info] = digit_info_stack.top();
+            auto [prev, current, digit_node1, digit_node2, carry] = info;
+            digit_info_stack.pop();
+            if (direction == RecursiveDirection::go) {
+                if (!digit_node1 && !digit_node2 && !carry) continue;
+                int total = getValOrDefault(digit_node1, 0) + getValOrDefault(digit_node2, 0) + carry;
+                current->val = total % 10;
+                digit_info_stack.push({RecursiveDirection::back, {prev, current, nullptr, nullptr, 0}});
+                digit_info_stack.push({
+                    RecursiveDirection::go,
+                    {current, new ListNode(), getNextIfExists(digit_node1), getNextIfExists(digit_node2), total / 10}
+                });
+            } else {
+                // back
+                if (prev) {
+                    prev->next = current;
+                }
+            }
+        }
+        return head;
+    }
+
+private:
+    static int getValOrDefault(const ListNode* const node, const int default_value) {
+        if (!node) return default_value;
+        return node->val;
+    }
+
+    static ListNode* getNextIfExists(const ListNode* const node) {
+        if (!node) return nullptr;
+        return node->next;
+    }
+};
+```
