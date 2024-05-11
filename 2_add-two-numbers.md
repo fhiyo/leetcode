@@ -275,3 +275,57 @@ private:
     }
 };
 ```
+
+## 6th
+
+帰りがけstack版。enumはboolで十分かもしれないが、一応。
+
+```cpp
+enum class RecursiveDirection {
+    kGo, kBack
+};
+
+struct DigitInfo {
+    RecursiveDirection direction;
+    ListNode*& prev;
+    ListNode* node;
+    int digit;
+    ListNode* l1;
+    ListNode* l2;
+    int carry;
+};
+
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode* head = nullptr;
+        stack<DigitInfo> digit_info_stack = {};
+        digit_info_stack.push({RecursiveDirection::kGo, head, nullptr, 0, l1, l2, 0});
+        while (!digit_info_stack.empty()) {
+            auto& [direction, prev, node, digit, l1, l2, carry] = digit_info_stack.top();
+            if (direction == RecursiveDirection::kBack) {
+                prev = new ListNode(digit, node);
+                digit_info_stack.pop();
+                continue;
+            }
+            if (!l1 && !l2 && !carry) {
+                digit_info_stack.pop();
+                continue;
+            }
+            int total = carry;
+            if (l1) {
+                total += l1->val;
+                l1 = l1->next;
+            }
+            if (l2) {
+                total += l2->val;
+                l2 = l2->next;
+            }
+            digit = total % 10;
+            direction = RecursiveDirection::kBack;
+            digit_info_stack.push({RecursiveDirection::kGo, node, nullptr, 0, l1, l2, total / 10});
+        }
+        return head;
+    }
+};
+```
