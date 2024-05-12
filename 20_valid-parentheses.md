@@ -136,3 +136,54 @@ private:
 ## 3rd
 
 省略
+
+## 4th
+
+https://discord.com/channels/1084280443945353267/1235829049511903273/1238815737548898346 を参考に再度再帰下降構文解析で実装。
+
+
+```cpp
+/*
+    parens := ('(' parens ')' | '{' parens '}' | '[' parens ']')*
+*/
+class ParenParser {
+    size_t index;
+
+public:
+    ParenParser() : index(0) {}
+
+    bool parse(const string& input) {
+        return parens(input) && index == input.length();
+    }
+
+    bool parens(const string& input) {
+        while (true) {
+            if (consume('(', input)) {
+                if (!(parens(input) && consume(')', input))) return false;
+            } else if (consume('{', input)) {
+                if (!(parens(input) && consume('}', input))) return false;
+            } else if (consume('[', input)) {
+                if (!(parens(input) && consume(']', input))) return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    bool consume(const char ch, const string& input) {
+        if (index < input.length() && input[index] == ch) {
+            index++;
+            return true;
+        }
+        return false;
+    }
+};
+
+class Solution {
+public:
+    bool isValid(string s) {
+        ParenParser parser;
+        return parser.parse(s);
+    }
+};
+```
