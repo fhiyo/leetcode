@@ -187,3 +187,49 @@ public:
     }
 };
 ```
+
+## 5th
+
+```cpp
+class ParenParser {
+public:
+    /*
+        parens := ('(' parens ')' | '{' parens '}' '[' parens ']')*
+    */
+    static bool parse(const string& input) {
+        int index = 0;
+        return parens(input, index) && index == input.length();
+    }
+
+private:
+    static bool parens(const string& input, int& index) {
+        while (true) {
+            if (consume('(', input, index)) {
+                if (!(parens(input, index) && consume(')', input, index))) return false;
+            } else if (consume('{', input, index)) {
+                if (!(parens(input, index) && consume('}', input, index))) return false;
+            } else if (consume('[', input, index)) {
+                if (!(parens(input, index) && consume(']', input, index))) return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    static bool consume(const char ch, const string& input, int& index) {
+        if (index < input.length() && input[index] == ch) {
+            index++;
+            return true;
+        }
+        return false;
+    }
+};
+
+class Solution {
+public:
+    bool isValid(string s) {
+        ParenParser parser;
+        return parser.parse(s);
+    }
+};
+```
