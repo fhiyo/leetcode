@@ -201,6 +201,8 @@ private:
 
 ## 2nd
 
+プッシュダウンオートマトン
+
 ```cpp
 class Solution {
 public:
@@ -262,6 +264,99 @@ private:
             i++;
         }
         return num;
+    }
+};
+```
+
+---
+
+再帰下降構文解析
+
+```cpp
+class Solution {
+public:
+    /*
+        expr   := term (('+' | '-') term)*
+        term   := ws ('-' ws)? (number | '(' ws expr ws ')') ws
+        number := [0-9]+
+        ws   := ' '*
+    */
+    int calculate(string s) {
+        int index = 0;
+        return expr(s, index);
+    }
+
+private:
+    static int expr(const string& s, int& i) {
+        int lterm = term(s, i);
+        while (true) {
+            if (s[i] != '+' && s[i] != '-') break;
+            const char op = s[i];
+            i++;
+            int rterm = term(s, i);
+            switch (op) {
+                case '+':
+                    lterm += rterm;
+                    break;
+                case '-':
+                    lterm -= rterm;
+                    break;
+                default:
+                    fail(s, i);
+            }
+        }
+        return lterm;
+    }
+
+    static int term(const string& s, int& i) {
+        int sign = 1;
+        int result = 0;
+        ws(s, i);
+        if (s[i] == '-') {
+            sign = -1;
+            i++;
+            ws(s, i);
+        }
+        if (isdigit(s[i])) {
+            result = number(s, i);
+        } else {
+            if (!consume('(', s, i)) fail(s, i);
+            ws(s, i);
+            result = expr(s, i);
+            ws(s, i);
+            if (!consume(')', s, i)) fail(s, i);
+        }
+        ws(s, i);
+        result *= sign;
+        return result;
+    }
+
+    static int number(const string& s, int& i) {
+        int num = 0;
+        while (isdigit(s[i])) {
+            num = 10 * num + (s[i] - '0');
+            i++;
+        }
+        return num;
+    }
+
+    static void ws(const string& s, int& i) {
+        while (s[i] == ' ') {
+            i++;
+        }
+    }
+
+    static bool consume(const char ch, const string& s, int& i) {
+        if (i < s.length() && s[i] == ch) {
+            i++;
+            return true;
+        }
+        return false;
+    }
+
+    static void fail(const string& s, const int i) {
+        cerr << "parse failed at " << i << ". input string: " << s << endl;
+        exit(1);
     }
 };
 ```
