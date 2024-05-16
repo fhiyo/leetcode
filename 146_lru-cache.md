@@ -172,3 +172,58 @@ private:
     }
 };
 ```
+
+## 4th
+
+std::listを使って書いてみた。iteratorを管理する手間が増えるので、書く前に思ったよりも楽にはならなかった。
+key_to_list_やrecently_used_order_list_など名前が微妙。
+
+```cpp
+class LRUCache {
+public:
+    LRUCache(int capacity) : capacity_(capacity), key_to_node_(), key_to_list_(), recently_used_order_list_() {}
+
+    int get(int key) {
+        if (!key_to_node_.contains(key)) return -1;
+        toMRU(key_to_node_.at(key).get());
+        return key_to_node_.at(key)->value;
+    }
+
+    void put(int key, int value) {
+        auto [it, inserted] = key_to_node_.try_emplace(key, make_unique<Node>(key, value));
+        Node* const node = it->second.get();
+        if (!inserted) {
+            node->value = value;
+            toMRU(node);
+            return;
+        }
+        recently_used_order_list_.push_front(node);
+        key_to_list_.emplace(key, recently_used_order_list_.begin());
+        if (recently_used_order_list_.size() > capacity_) {
+            Node* const lru = recently_used_order_list_.back();
+            recently_used_order_list_.pop_back();
+            key_to_list_.erase(lru->key);
+            key_to_node_.erase(lru->key);
+        }
+    }
+
+private:
+    struct Node {
+        int key = 0;
+        int value = 0;
+        Node(int key, int value) : key(key), value(value) {}
+    };
+
+    void toMRU(Node* const node) {
+        recently_used_order_list_.erase(key_to_list_.at(node->key));
+        key_to_list_.erase(node->key);
+        recently_used_order_list_.push_front(node);
+        key_to_list_.emplace(node->key, recently_used_order_list_.begin());
+    }
+
+    int capacity_;
+    unordered_map<int, unique_ptr<Node>> key_to_node_;
+    unordered_map<int, list<Node*>::iterator> key_to_list_;
+    list<Node*> recently_used_order_list_;
+};
+```
