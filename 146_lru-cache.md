@@ -227,3 +227,50 @@ private:
     list<Node*> recently_used_order_list_;
 };
 ```
+
+## 5th
+
+```cpp
+class LRUCache {
+public:
+    LRUCache(int capacity) : capacity_(capacity), nodes_(), key_to_node_() {}
+
+    int get(int key) {
+        auto it = key_to_node_.find(key);
+        if (it == key_to_node_.end()) return -1;
+        moveToFront(it->second);
+        return it->second->value;
+    }
+
+    void put(int key, int value) {
+        auto it = key_to_node_.find(key);
+        if (it != key_to_node_.end()) {
+            it->second->value = value;
+            moveToFront(it->second);
+            return;
+        }
+        nodes_.emplace_front(key, value);
+        key_to_node_[key] = nodes_.begin();
+        if (key_to_node_.size() > capacity_) {
+            Node* const lru = &nodes_.back();
+            key_to_node_.erase(lru->key);
+            nodes_.pop_back();
+        }
+    }
+
+private:
+    struct Node {
+        int key;
+        int value;
+        Node(int key, int value) : key(key), value(value) {}
+    };
+
+    void moveToFront(list<Node>::iterator it) {
+        nodes_.splice(nodes_.begin(), nodes_, it);
+    }
+
+    int capacity_;
+    list<Node> nodes_;
+    unordered_map<int, list<Node>::iterator> key_to_node_;
+};
+```
