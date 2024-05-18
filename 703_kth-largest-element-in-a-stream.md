@@ -55,6 +55,8 @@ n: 入力長
 pop()の頭にはarr_.size() > 0であることをassertするなどした方が良さそう。
 pop()のif文内の条件を間違えており1ミス。
 
+追記: templateの後のangleとの間は一文字空ける方が主流か？ [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) では空けている記述の方が多いが一部 (悪い例ではなく) 空けていないものも見られる。
+
 ```cpp
 template<typename T>
 class MinHeap {
