@@ -149,3 +149,133 @@ private:
     Trie stream_matcher_;
 };
 ```
+
+## 2nd
+
+ローリングハッシュを用いた解法
+
+所要時間: 13:12
+
+コンストラクタ: wordsの長さをnとして
+- 時間計算量: $O(\sum_{i=1}^n len(word_i))$
+- 空間計算量: $O(\sum_{i=1}^n len(word_i))$
+
+query() 1回辺りの評価。wordのうち最大長のものの長さを$l$として
+- 時間計算量: $O(l)$
+- 空間計算量: $O(l)$
+
+```cpp
+class StreamChecker {
+public:
+    StreamChecker(vector<string>& words) : stream_suffix_(), max_word_length_(0), word_hashes_({}), end_of_word_hashes_({}) {
+        for (const string& word : words) {
+            uint64_t hash = 0;
+            uint64_t prime_pow = 1;
+            for (auto it = word.crbegin(); it != word.crend(); it++) {
+                nextRollingHash(*it, hash, prime_pow);
+                word_hashes_.insert(hash);
+            }
+            end_of_word_hashes_.insert(hash);
+            max_word_length_ = max(max_word_length_, word.length());
+        }
+    }
+
+    bool query(char letter) {
+        stream_suffix_.push_back(letter);
+        if (stream_suffix_.size() > max_word_length_) {
+            stream_suffix_.pop_front();
+        }
+        uint64_t hash = 0;
+        uint64_t prime_pow = 1;
+        for (auto it = stream_suffix_.crbegin(); it != stream_suffix_.crend(); it++) {
+            nextRollingHash(*it, hash, prime_pow);
+            if (!word_hashes_.contains(hash)) return false;
+            if (end_of_word_hashes_.contains(hash)) return true;
+        }
+        return false;
+    }
+
+private:
+    void nextRollingHash(const char ch, uint64_t& hash, uint64_t& prime_pow) const {
+        const uint64_t prime = 29;
+        const uint64_t mod = (1 << 61) - 1;
+        hash = (hash + prime_pow * (ch - 'a' + 1)) % mod;
+        prime_pow *= prime;
+    }
+
+    deque<char> stream_suffix_;
+    size_t max_word_length_;
+    set<uint64_t> word_hashes_;
+    set<uint64_t> end_of_word_hashes_;
+};
+```
+
+## 3rd
+
+所要時間: 16:07
+
+```cpp
+class Trie {
+public:
+    Trie() {}
+
+    // insert a word in reverse order
+    void insert(const string& word) {
+        if (!word.length()) return;
+        insert(word, word.length() - 1, &root_);
+    }
+
+    bool search(const deque<char>& s) const {
+        if (s.empty()) return true;
+        return search(s, s.size() - 1, &root_);
+    }
+
+private:
+    struct Node {
+        bool is_end;
+        map<char, unique_ptr<Node>> next_nodes;
+        Node() : is_end(false), next_nodes() {}
+    };
+
+    void insert(const string& word, const int index, Node* const node) {
+        if (index == -1) {
+            node->is_end = true;
+            return;
+        }
+        node->next_nodes.insert({word[index], make_unique<Node>()});
+        insert(word, index - 1, node->next_nodes.at(word[index]).get());
+    }
+
+    bool search(const deque<char>& s, const int index, const Node* const node) const {
+        if (node->is_end) return true;
+        if (index == -1) return false;
+        if (!node->next_nodes.contains(s[index])) return false;
+        return search(s, index - 1, node->next_nodes.at(s[index]).get());
+    }
+
+    Node root_;
+};
+
+class StreamChecker {
+public:
+    StreamChecker(vector<string>& words) : checker_(), stream_suffix_({}), max_word_length_(0) {
+        for (const string& word : words) {
+            checker_.insert(word);
+            max_word_length_ = max(max_word_length_, word.length());
+        }
+    }
+
+    bool query(char letter) {
+        stream_suffix_.push_back(letter);
+        if (stream_suffix_.size() > max_word_length_) {
+            stream_suffix_.pop_front();
+        }
+        return checker_.search(stream_suffix_);
+    }
+
+private:
+    Trie checker_;
+    deque<char> stream_suffix_;
+    size_t max_word_length_;
+};
+```
