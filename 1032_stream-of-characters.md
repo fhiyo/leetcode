@@ -279,3 +279,131 @@ private:
     size_t max_word_length_;
 };
 ```
+
+
+## 4th
+
+Aho-Corasick
+
+```cpp
+class DFA {
+public:
+    DFA() : num_(0), root_(genId()), current_node_(&root_), known_chars_({}) {}
+
+    ~DFA() {
+        for (const auto [ch, node] : root_.go_to) {
+            if (node == &root_) continue;
+            freeNodes(node);
+        }
+    }
+
+    void build(const vector<string>& words) {
+        for (const string& word : words) {
+            insert(word, 0, &root_);
+        }
+        for (const char ch : known_chars_) {
+            root_.go_to.try_emplace(ch, &root_);
+        }
+        buildFailureLink();
+    }
+
+    bool transit(const char ch) {
+        if (!known_chars_.contains(ch)) {
+            root_.go_to[ch] = &root_;
+            known_chars_.insert(ch);
+        }
+        while (!current_node_->go_to.contains(ch)) {
+            current_node_ = current_node_->failure;
+        }
+        current_node_ = current_node_->go_to.at(ch);
+        return current_node_->active;
+    }
+
+private:
+    struct Node {
+        int id; // for debug
+        map<char, Node*> go_to;
+        Node* failure;
+        bool active;
+        Node(int id) : id(id), go_to({}), failure(nullptr), active(false) {}
+    };
+
+    void insert(const string& word, const size_t index, Node* const node) {
+        if (index == word.length()) {
+            node->active = true;
+            return;
+        }
+        known_chars_.insert(word[index]);
+        if (!node->go_to.contains(word[index])) {
+            node->go_to[word[index]] = new Node(genId());
+        }
+        insert(word, index + 1, node->go_to.at(word[index]));
+    }
+
+    void buildFailureLink() {
+        queue<Node*> nodes = {};
+        for (auto [ch, node] : root_.go_to) {
+            if (node == &root_) continue;
+            node->failure = &root_;
+            nodes.push(node);
+        }
+        while (!nodes.empty()) {
+            Node* const node = nodes.front();
+            nodes.pop();
+            for (auto [ch, next_node] : node->go_to) {
+                Node* failure = node->failure;
+                while (!failure->go_to.contains(ch)) {
+                    failure = failure->failure;
+                }
+                next_node->failure = failure->go_to.at(ch);
+                next_node->active = next_node->active || next_node->failure->active;
+                nodes.push(next_node);
+            }
+        }
+    }
+
+    // free memory allocated for nodes
+    void freeNodes(Node* const node) {
+        for (auto [ch, next_node] : node->go_to) {
+            freeNodes(next_node);
+        }
+        delete node;
+    }
+
+    // for debug
+    int genId() {
+        return num_++;
+    }
+
+    // for debug
+    static void printNode(const Node* const node) {
+        printf("---------------\n");
+        printf("node id: %d\n", node->id);
+        printf("-- go_to --\n");
+        for (const auto [ch, next_node] : node->go_to) {
+            printf("ch: %c, next_node: %d\n", ch, next_node->id);
+        }
+        printf("failure: %d\n", node->failure ? node->failure->id : -1);
+        printf("---------------\n");
+    }
+
+    int num_;
+    Node root_;
+    Node* current_node_;
+    set<char> known_chars_;
+};
+
+class StreamChecker {
+public:
+    StreamChecker(vector<string>& words) : checker_({}) {
+        checker_.build(words);
+    }
+
+    bool query(char letter) {
+        return checker_.transit(letter);
+    }
+
+private:
+    DFA checker_;
+};
+```
