@@ -119,3 +119,32 @@ class Solution:
                 heapq.heappush(candidates, TotalAndIndexes(nums1[index1] + nums2[index2+1], index1, index2 + 1))
         return k_smallest_pairs
 ```
+
+## 4th
+
+`k > (len(nums1)*len(nums2))` のときは全部列挙して止まるバージョン。
+totalに関してタイブレークのとき(index1, index2)が小さい方が優先されることを利用している。
+
+
+```py
+class Solution:
+    def kSmallestPairs(self, nums1: List[int], nums2: List[int], k: int) -> List[List[int]]:
+        assert len(nums1) > 0 and len(nums2) > 0
+
+        def make_total_with_indexes(index1, index2):
+            return nums1[index1] + nums2[index2], index1, index2
+
+        def generate_k_smallest_pairs(total_with_indexes, k):
+            for _ in range(k):
+                _, index1, index2 = heapq.heappop(total_with_indexes)
+                yield nums1[index1], nums2[index2]
+                if index1 == len(nums1) - 1 and index2 == len(nums2) - 1:
+                    return
+                if index1 < len(nums1) - 1 and index2 == 0:
+                    heapq.heappush(total_with_indexes, make_total_with_indexes(index1 + 1, 0))
+                if index2 < len(nums2) - 1:
+                    heapq.heappush(total_with_indexes, make_total_with_indexes(index1, index2 + 1))
+
+        total_with_indexes = [make_total_with_indexes(0, 0)]
+        return [list(t) for t in generate_k_smallest_pairs(total_with_indexes, k)]
+```
