@@ -142,3 +142,16 @@ class Solution:
             sorted_to_anagrams[''.join(sorted(str_))].append(str_)
         return list(sorted_to_anagrams.values())
 ```
+
+## 追記
+
+groupby()とextend()を使っても良いかも。
+
+```py
+class Solution:
+    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+        sorted_to_anagrams = defaultdict(list)
+        for key, g in groupby(strs, key=lambda s: ''.join(sorted(s))):
+            sorted_to_anagrams[key].extend(g)
+        return list(sorted_to_anagrams.values())
+```
