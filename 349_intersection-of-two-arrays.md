@@ -133,3 +133,33 @@ class Solution:
         return intersection
 ```
 
+## 4th
+
+```py
+class Solution:
+    def intersection(self, nums1: List[int], nums2: List[int]) -> List[int]:
+        assert len(nums1) > 0 and len(nums2) > 0, 'nums1 and nums2 must not be empty.'
+        nums1.sort()
+        nums2.sort()
+        index1 = 0
+        index2 = 0
+        intersection = []
+        while index1 < len(nums1) and index2 < len(nums2):
+            if nums1[index1] < nums2[index2]:
+                index1 += 1
+                continue
+            if nums1[index1] > nums2[index2]:
+                index2 += 1
+                continue
+            if isnan(nums1[index1]) or isnan(nums2[index2]):
+                raise RuntimeError('nan value is included in the lists')
+            # in case of nums1[index1] == nums2[index2]
+            num = nums1[index1]
+            intersection.append(num)
+            while index1 < len(nums1) and nums1[index1] == num:
+                index1 += 1
+            while index2 < len(nums2) and nums2[index2] == num:
+                index2 += 1
+        return intersection
+```
+
