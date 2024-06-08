@@ -153,3 +153,34 @@ class Solution:
 
         return len(set(map(normalize, emails)))
 ```
+
+## 4th
+
+```py
+class Solution:
+    def numUniqueEmails(self, emails: List[str]) -> int:
+        def normalize(email: str) -> str:
+            local_part, domain = email.rsplit('@', maxsplit=1)
+            local_part = local_part.split('+')[0]
+            local_part = local_part.replace('.', '')
+            return local_part + '@' + domain
+
+        normalized_emails = set()
+        for email in emails:
+            normalized_emails.add(normalize(email))
+        return len(normalized_emails)
+```
+
+①のように正規表現を使ってもそれを使う意味が薄い気がする。少し複雑にはなるがこんな感じだろうか。単体テストを厚めにしないとこの程度でも嫌な感じはある
+
+```py
+class Solution:
+    def numUniqueEmails(self, emails: List[str]) -> int:
+        def normalize(email: str) -> str:
+            g = re.match(r'([^+]+)(?:\+.*)?@(.+)', email)
+            normalized_local_part = g[1].replace('.', '')
+            domain = g[2]
+            return f'{normalized_local_part}@{domain}'
+
+        return len(set(map(normalize, emails)))
+```
