@@ -148,3 +148,65 @@ class Solution:
                 return i
         return -1
 ```
+
+## 4th
+
+微妙な感じ。
+
+```py
+class Solution:
+    def firstUniqChar(self, s: str) -> int:
+        char_to_first_occurence_index = {}
+        seen = set()
+        for i, c in enumerate(s):
+            if c in seen:
+                if c in char_to_first_occurence_index:
+                    del char_to_first_occurence_index[c]
+                continue
+            char_to_first_occurence_index[c] = i
+            seen.add(c)
+        if len(char_to_first_occurence_index) == 0:
+            return -1
+        return min(char_to_first_occurence_index.values())
+```
+
+[こちら](https://github.com/hayashi-ay/leetcode/pull/28/files#diff-5ec7c3c87171edf4d61e9eb79fd926cafa27caf068da7474222897c8e9e7ab96R92)を参考に、書き直し。
+
+```py
+class Solution:
+    def firstUniqChar(self, s: str) -> int:
+        char_to_first_occurence_index = {}
+        duplicated_chars = set()
+        for i, c in enumerate(s):
+            if c in duplicated_chars:
+                continue
+            if c in char_to_first_occurence_index:
+                del char_to_first_occurence_index[c]
+                duplicated_chars.add(c)
+                continue
+            char_to_first_occurence_index[c] = i
+        if not char_to_first_occurence_index:
+            return -1
+        return min(char_to_first_occurence_index.values())
+```
+
+
+上で参考にしたコードはdictが挿入順に順序付けられることを利用しているが、あえてそれを保証しない3.7以前のPythonを気にするならこう書くだろうか (気にする場面は少なくなっているだろうが)。
+
+```py
+class Solution:
+    def firstUniqChar(self, s: str) -> int:
+        char_to_first_occurence_index = OrderedDict()
+        duplicated_chars = set()
+        for i, c in enumerate(s):
+            if c in duplicated_chars:
+                continue
+            if c in char_to_first_occurence_index:
+                del char_to_first_occurence_index[c]
+                duplicated_chars.add(c)
+                continue
+            char_to_first_occurence_index[c] = i
+        if not char_to_first_occurence_index:
+            return -1
+        return char_to_first_occurence_index.popitem(last=False)[1]
+```
