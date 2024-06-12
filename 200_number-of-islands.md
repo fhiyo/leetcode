@@ -266,3 +266,63 @@ class Solution:
                     num_islands += 1
         return num_islands
 ```
+
+## 4th
+
+https://github.com/fhiyo/leetcode/pull/20#discussion_r1635719450 を参考に実装。
+is_landはdef, indexはlambdaで書いたけどどちらかに統一した方が良かったか？
+indexの処理は見た目分かりやすいのでこのままでもいいかも。
+
+
+```py
+class UnionFind:
+    def __init__(self, size):
+        self.parent = [i for i in range(size)]
+        self.rank = [0] * size
+
+    def findSet(self, i: int) -> int:
+        if i == self.parent[i]:
+            return i
+        self.parent[i] = self.findSet(self.parent[i])
+        return self.parent[i]
+
+    def merge(self, i: int, j: int) -> bool:
+        return self._link(
+            self.findSet(self.parent[i]),
+            self.findSet(self.parent[j]),
+        )
+
+    def _link(self, i: int, j: int) -> bool:
+        if i == j:
+            return False
+        if self.rank[i] < self.rank[j]:
+            self.parent[i] = j
+        else:
+            self.parent[j] = i
+            if self.rank[i] == self.rank[j]:
+                self.rank[i] += 1
+        return True
+
+
+class Solution:
+    def numIslands(self, grid: List[List[str]]) -> int:
+        nrows = len(grid)
+        ncols = len(grid[0])
+
+        def is_land(row: int, col: int) -> bool:
+            return 0 <= row < nrows and 0 <= col < ncols and grid[row][col] == '1'
+
+        uf = UnionFind(nrows * ncols)
+        index = lambda r, c: r * ncols + c
+        result = nrows * ncols
+        for r in range(nrows):
+            for c in range(ncols):
+                if not is_land(r, c):
+                    result -= 1
+                    continue
+                if is_land(r + 1, c) and uf.merge(index(r, c), index(r + 1, c)):
+                    result -= 1
+                if is_land(r, c + 1) and uf.merge(index(r, c), index(r, c + 1)):
+                    result -= 1
+        return result
+```
