@@ -180,3 +180,45 @@ class Solution:
             depth += 1
         assert False # never reached
 ```
+
+## 4th
+
+### ①
+
+```py
+class Solution:
+    def minDepth(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+        node_depth_pairs = deque([(root, 1)])
+        while node_depth_pairs:
+            node, depth = node_depth_pairs.popleft()
+            if not node.left and not node.right:
+                return depth
+            if node.left:
+                node_depth_pairs.append((node.left, depth + 1))
+            if node.right:
+                node_depth_pairs.append((node.right, depth + 1))
+        assert False # never reached
+```
+
+### ②
+
+```py
+class Solution:
+    def minDepth(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+        return self._min_depth_helper(root)
+
+    def _min_depth_helper(self, node: TreeNode) -> int:
+        if not node.left and not node.right:
+            return 1
+        depth = float('inf')
+        if node.left:
+            depth = self._min_depth_helper(node.left)
+        if node.right:
+            depth = min(depth, self._min_depth_helper(node.right))
+        assert depth != float('inf')
+        return depth + 1
+```
