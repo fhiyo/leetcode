@@ -212,3 +212,58 @@ class Solution:
             num_words += 1
         return 0
 ```
+
+
+## 4th
+
+https://github.com/fhiyo/leetcode/pull/22#discussion_r1642796993 の練習。
+
+
+```py
+class Solution:
+    def ladderLength(self, beginWord: str, endWord: str, wordList: List[str]) -> int:
+        queue = deque([(beginWord, 1)])
+        half_length = len(beginWord) // 2
+        first_half_to_words = defaultdict(list)
+        second_half_to_words = defaultdict(list)
+        used_words = set()
+        for word in wordList:
+            first_half_to_words[word[:half_length]].append(word)
+            second_half_to_words[word[half_length:]].append(word)
+        while queue:
+            word, length = queue.popleft()
+            if word == endWord:
+                return length
+            for adjacent_word in self._generate_adjacent_words(first_half_to_words, second_half_to_words, word, used_words):
+                queue.append((adjacent_word, length + 1))
+                used_words.add(adjacent_word)
+        return 0
+
+    def _generate_adjacent_words(
+        self,
+        first_half_to_words: dict[str, list[str]],
+        second_half_to_words: dict[str, list[str]],
+        word: str,
+        used_words: set[str]
+    ):
+        half_length = len(word) // 2
+        for first_half_word in first_half_to_words[word[:half_length]]:
+            if self._are_adjacents(first_half_word[half_length:], word[half_length:]) \
+                and first_half_word not in used_words:
+                yield first_half_word
+        for second_half_word in second_half_to_words[word[half_length:]]:
+            if self._are_adjacents(second_half_word[:half_length], word[:half_length]) \
+                and second_half_word not in used_words:
+                yield second_half_word
+
+    def _are_adjacents(self, a: str, b: str) -> bool:
+        assert len(a) == len(b)
+        length = 0
+        for i in range(len(a)):
+            if a[i] == b[i]:
+                continue
+            length += 1
+            if length > 1:
+                return False
+        return length == 1
+```
